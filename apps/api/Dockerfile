@@ -1,22 +1,22 @@
+# Dockerfile simplificado para Railway - coloque este arquivo em apps/api/Dockerfile
 FROM node:22-slim AS base
-
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-
 RUN corepack enable
 COPY . /app
 WORKDIR /app
 
 FROM base AS prod-deps
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
+# Removemos o cache mount que não funciona no Railway
+RUN pnpm install --prod --frozen-lockfile
 
 FROM base AS build
-RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install && pnpm run build
+# Removemos o cache mount que não funciona no Railway
+RUN pnpm install && pnpm run build
 
 # Install Go
 FROM golang:1.24 AS go-base
 COPY sharedLibs/go-html-to-md /app/sharedLibs/go-html-to-md
-
 # Install Go dependencies and build parser lib
 RUN cd /app/sharedLibs/go-html-to-md && \
     go mod tidy && \
@@ -61,4 +61,4 @@ EXPOSE 8080
 # Make sure the entrypoint script has the correct line endings
 RUN sed -i 's/\r$//' /app/docker-entrypoint.sh
 
-ENTRYPOINT "/app/docker-entrypoint.sh"
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
