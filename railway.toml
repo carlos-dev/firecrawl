@@ -1,0 +1,10 @@
+[build]
+builder = "dockerfile"
+
+[deploy]
+startCommand = "./docker-entrypoint.sh"
+restartPolicyType = "always"
+
+[env]
+PORT = "8080"
+NODE_ENV = "production"
